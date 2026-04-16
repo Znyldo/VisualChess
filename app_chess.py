@@ -14,7 +14,7 @@ SUPPORTED_TIME_CONTROL = "120+1"
 
 def main() -> None:
     st.set_page_config(
-        page_title="Replay de Xadrez em Tempo Real",
+        page_title="Replay Chess",
         layout="wide",
         initial_sidebar_state="collapsed",
     )
