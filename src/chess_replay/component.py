@@ -134,6 +134,7 @@ def render_chess_replay_html(game: ParsedGame, project_root: Path) -> str:
 
     .board-frame {{
       width: min(100%, 560px);
+      aspect-ratio: 1 / 1;
       margin: 0 auto;
       border-radius: 18px;
       overflow: hidden;
@@ -144,14 +145,19 @@ def render_chess_replay_html(game: ParsedGame, project_root: Path) -> str:
 
     .board-grid {{
       display: grid;
+      height: 100%;
       grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
       width: 100%;
-      aspect-ratio: 1;
     }}
 
     .square {{
       position: relative;
       display: flex;
+      width: 100%;
+      height: 100%;
+      min-width: 0;
+      min-height: 0;
       align-items: center;
       justify-content: center;
       overflow: hidden;

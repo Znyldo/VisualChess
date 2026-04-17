@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from .models import GameMetadata, MoveRecord, ParsedGame
 
@@ -8,6 +9,25 @@ HEADER_RE = re.compile(r'^\[(\w+)\s+"(.*)"\]$')
 CLOCK_RE = re.compile(r"\[%clk\s+([0-9:.]+)\]")
 TIMESTAMP_RE = re.compile(r"\[%timestamp\s+(\d+)\]")
 RESULT_TOKENS = {"1-0", "0-1", "1/2-1/2", "*"}
+SPACE_TRANSLATION = str.maketrans({
+    "\u00a0": " ",
+    "\u1680": " ",
+    "\u2000": " ",
+    "\u2001": " ",
+    "\u2002": " ",
+    "\u2003": " ",
+    "\u2004": " ",
+    "\u2005": " ",
+    "\u2006": " ",
+    "\u2007": " ",
+    "\u2008": " ",
+    "\u2009": " ",
+    "\u200a": " ",
+    "\u202f": " ",
+    "\u205f": " ",
+    "\u3000": " ",
+})
+INVISIBLE_TRANSLATION = str.maketrans("", "", "\u200b\u200c\u200d\u200e\u200f\u2060\u2066\u2067\u2068\u2069\ufeff")
 
 
 class PgnParseError(ValueError):
@@ -15,6 +35,7 @@ class PgnParseError(ValueError):
 
 
 def parse_chess_com_pgn(pgn_text: str) -> ParsedGame:
+    pgn_text = _normalize_pgn_text(pgn_text)
     headers, movetext = _split_headers_and_movetext(pgn_text)
     time_control = headers.get("TimeControl", "")
     initial_seconds, increment_seconds = _parse_time_control(time_control)
@@ -46,6 +67,14 @@ def parse_chess_com_pgn(pgn_text: str) -> ParsedGame:
         increment_seconds=increment_seconds,
         raw_pgn=pgn_text,
     )
+
+
+def _normalize_pgn_text(pgn_text: str) -> str:
+    normalized = unicodedata.normalize("NFKC", pgn_text)
+    normalized = normalized.translate(SPACE_TRANSLATION)
+    normalized = normalized.translate(INVISIBLE_TRANSLATION)
+    normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
+    return normalized.strip()
 
 
 def _split_headers_and_movetext(pgn_text: str) -> tuple[dict[str, str], str]:
